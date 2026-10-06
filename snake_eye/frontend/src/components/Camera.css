@@ -1,0 +1,44 @@
+.camera video,
+.camera img {
+  width: 100%;
+  max-width: 480px;
+  background: #000;
+  border-radius: 8px;
+  display: block;
+}
+.camera .row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 12px 0;
+  flex-wrap: wrap;
+}
+.camera button {
+  padding: 8px 16px;
+  font-size: 16px;
+  border: 0;
+  border-radius: 6px;
+  background: #2e7d32;
+  color: #fff;
+}
+.camera button:disabled {
+  background: #444;
+  color: #888;
+}
+.camera input {
+  width: 60px;
+  font-size: 16px;
+  padding: 6px;
+}
+.camera .status {
+  color: #8bc34a;
+}
+.camera .error {
+  color: #ff5252;
+  white-space: pre-wrap;
+}
+.camera .label {
+  color: #999;
+  font-size: 13px;
+  margin-top: 12px;
+}

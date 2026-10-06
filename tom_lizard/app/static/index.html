@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tom Lizard</title>
+  <link rel="icon" href="/tom_icon.png">
+  <style>
+    :root {
+      --bg: #f4f7f2;
+      --panel: #ffffff;
+      --text: #1d2a1f;
+      --muted: #6b7a6d;
+      --border: #dbe4d8;
+      --green: #3f8f4a;
+      --green-soft: #e3f1e1;
+      --user: #2f6f3a;
+      --user-text: #ffffff;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #131a14;
+        --panel: #1b241c;
+        --text: #e4ece2;
+        --muted: #8fa091;
+        --border: #2c3a2e;
+        --green: #6cc078;
+        --green-soft: #22332a;
+        --user: #3f8f4a;
+        --user-text: #ffffff;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+    }
+    header img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; object-position: 30% 15%; }
+    header h1 { font-size: 18px; margin: 0; }
+    header span { color: var(--muted); font-size: 13px; }
+    #chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 800px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    .row { display: flex; gap: 8px; align-items: flex-start; }
+    .row.user { justify-content: flex-end; }
+    .row img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; object-position: 30% 15%; flex-shrink: 0; }
+    .bubble {
+      max-width: 80%;
+      padding: 10px 14px;
+      border-radius: 14px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      line-height: 1.5;
+    }
+    .user .bubble { background: var(--user); color: var(--user-text); }
+    .tom .bubble { background: var(--panel); border: 1px solid var(--border); }
+    .tom .bubble.waiting { color: var(--muted); font-style: italic; }
+    .tom .bubble.error { border-color: #c0392b; color: #c0392b; }
+    details {
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: var(--muted);
+      background: var(--green-soft);
+      border-radius: 8px;
+      padding: 6px 10px;
+    }
+    details summary { cursor: pointer; }
+    details .step { margin-top: 6px; white-space: pre-wrap; }
+    details .tool { color: var(--green); font-family: ui-monospace, Menlo, monospace; }
+    form {
+      display: flex;
+      gap: 8px;
+      padding: 12px 16px;
+      background: var(--panel);
+      border-top: 1px solid var(--border);
+    }
+    form > div { display: flex; gap: 8px; max-width: 800px; width: 100%; margin: 0 auto; }
+    textarea {
+      flex: 1;
+      resize: none;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg);
+      color: var(--text);
+      font: inherit;
+      min-height: 44px;
+      max-height: 160px;
+    }
+    button {
+      padding: 0 18px;
+      border: none;
+      border-radius: 10px;
+      background: var(--green);
+      color: #fff;
+      font: inherit;
+      cursor: pointer;
+    }
+    button:disabled { opacity: 0.5; cursor: default; }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="/tom_icon.png" alt="Tom">
+    <div>
+      <h1>Tom Lizard</h1>
+      <span>本地运行 · qwen3:8b</span>
+    </div>
+  </header>
+
+  <main id="chat"></main>
+
+  <form id="form">
+    <div>
+      <textarea id="input" rows="1" placeholder="跟 Tom 说点什么，Enter 发送，Shift+Enter 换行"></textarea>
+      <button id="send" type="submit">发送</button>
+    </div>
+  </form>
+
+  <script>
+    // 整段对话记录存在浏览器里，每次发消息都整段发给后端。
+    // 因为模型自己不记事，后端也不存，记录全靠这里。
+    const history = [];
+
+    const chatEl = document.getElementById("chat");
+    const form = document.getElementById("form");
+    const input = document.getElementById("input");
+    const sendBtn = document.getElementById("send");
+
+    function addRow(role, text, extraClass) {
+      const row = document.createElement("div");
+      row.className = "row " + role;
+      if (role === "tom") {
+        const img = document.createElement("img");
+        img.src = "/tom_icon.png";
+        row.appendChild(img);
+      }
+      const bubble = document.createElement("div");
+      bubble.className = "bubble" + (extraClass ? " " + extraClass : "");
+      bubble.textContent = text;
+      row.appendChild(bubble);
+      chatEl.appendChild(row);
+      chatEl.scrollTop = chatEl.scrollHeight;
+      return bubble;
+    }
+
+    // 把 Tom 中间的思考和工具调用放进一个可以展开的小框
+    function renderSteps(bubble, steps) {
+      if (!steps.length) return;
+      const details = document.createElement("details");
+      const toolCount = steps.filter(s => s.type === "tool").length;
+      const summary = document.createElement("summary");
+      summary.textContent = `Tom 的思考过程，用了 ${toolCount} 次工具`;
+      details.appendChild(summary);
+      for (const s of steps) {
+        const div = document.createElement("div");
+        div.className = "step" + (s.type === "tool" ? " tool" : "");
+        div.textContent = s.type === "tool"
+          ? `🔧 ${s.name}(${JSON.stringify(s.args)}) → ${s.result}`
+          : `💭 ${s.text}`;
+        details.appendChild(div);
+      }
+      bubble.prepend(details);
+    }
+
+    async function send(text) {
+      history.push({ role: "user", content: text });
+      addRow("user", text);
+      const bubble = addRow("tom", "Tom 在想……", "waiting");
+      input.disabled = true;
+      sendBtn.disabled = true;
+
+      try {
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messages: history }),
+        });
+        if (!res.ok) throw new Error(`服务器返回 ${res.status}`);
+        const data = await res.json();
+        history.push({ role: "assistant", content: data.reply });
+        bubble.className = "bubble";
+        bubble.textContent = data.reply;
+        renderSteps(bubble, data.steps);
+      } catch (err) {
+        // 失败的这句不算进对话记录，免得下次发给模型的记录缺一半
+        history.pop();
+        bubble.className = "bubble error";
+        bubble.textContent = "出错了：" + err.message + "。检查一下 Ollama 有没有在跑。";
+      } finally {
+        input.disabled = false;
+        sendBtn.disabled = false;
+        input.focus();
+        chatEl.scrollTop = chatEl.scrollHeight;
+      }
+    }
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = "";
+      send(text);
+    });
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey && !e.isComposing) {
+        e.preventDefault();
+        form.requestSubmit();
+      }
+    });
+
+    addRow("tom", "你好，我是 Tom 🦎 有什么想问的？");
+    input.focus();
+  </script>
+</body>
+</html>

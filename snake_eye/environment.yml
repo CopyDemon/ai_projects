@@ -1,0 +1,5 @@
+name: snake_eye
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12

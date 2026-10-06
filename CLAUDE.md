@@ -30,11 +30,13 @@
 
 | 项目 | 文件夹 | 状态 |
 | --- | --- | --- |
-| Tom Lizard | [tom_lizard/](tom_lizard/) | 第一课完成，往通用 agent 方向慢慢做 |
+| Tom Lizard | [tom_lizard/](tom_lizard/) | 有网页聊天界面了，往通用 agent 方向慢慢做 |
+| Snake Eye | [snake_eye/](snake_eye/) | 前后端分离：小前端拍照传图，服务器后端看图问答、上网查、记得住。刚定路线图，还没写代码 |
 
 ## 项目详情
 
 @tom_lizard/tom_lizard.md
+@snake_eye/snake_eye.md
 
 ## 新加项目的做法
 
