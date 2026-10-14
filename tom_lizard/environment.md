@@ -33,7 +33,7 @@ Ollama App 用 qwen3:8b 算出回答
 
 | 软件 | 版本 | 装在哪 | 干什么用 | 什么时候装的 |
 | --- | --- | --- | --- | --- |
-| Ollama | 0.35.0 | `/Applications/Ollama.app` | 在本机下载和运行开源大模型 | 2024-11-19 以前就装了，App 会自己更新 |
+| Ollama | 0.40.0 | `/Applications/Ollama.app` | 在本机下载和运行开源大模型 | 2024-11-19 以前就装了，App 会自己更新。2026-10-02 是 0.35.0，2026-10-09 发现自动更新到了 0.40.0 |
 | Miniforge | conda 24.3.0 | `~/miniforge3` | 管理 Python 环境。默认从 conda-forge 下载包 | 以前就装了 |
 
 ### Ollama 怎么启动
@@ -45,16 +45,17 @@ Ollama App 用 qwen3:8b 算出回答
 curl localhost:11434/api/version
 ```
 
-返回 `{"version":"0.35.0"}` 这样的内容就说明在跑。2026-10-02 实际测过。
+返回 `{"version":"0.40.0"}` 这样的内容就说明在跑。2026-10-02 实际测过。
 
 - 不想开 App 也可以在终端里跑 `ollama serve`，效果一样
 
 ## 三、模型
 
+**电脑上所有模型的完整清单在 `ai_projects/my_model_list.md`**，包括大小、实测内存、谁下的、怎么运行和删除。这里只记 Tom 用到的。
+
 | 模型 | 大小 | 下载日期 | 为什么下载 | 用在哪 |
 | --- | --- | --- | --- | --- |
-| qwen3:8b | 5.2GB | 2026-10-02 | 支持工具调用和思考，官方 tool calling 文档的例子就用它，速度快适合练手 | 第一课起 |
-| llama3.2:latest | 2.0GB | 大约 2024 年底 | 以前装的，不是这个项目下的 | Tom 不用，太小，工具调用不稳 |
+| qwen3:8b | 5.2GB | 2026-10-02 | 支持工具调用和思考，官方 tool calling 文档的例子就用它，速度快适合练手 | 第一课起，Tom 网页也用它 |
 
 qwen3:8b 的详细信息，用 `ollama show qwen3:8b` 查的：
 
@@ -259,3 +260,5 @@ conda list -n tom_lizard
 | 2026-10-02 | environment.yml 加上 fastapi 和 uvicorn，再建测试环境验证网页能用，验证完删除 | 同上面的重建命令 |
 | 2026-10-02 | 演示 Modelfile：用 qwen3:8b 建了一个 tom-demo 模型，测完删除。硬盘占用前后都是 6.7G | `ollama create tom-demo -f Modelfile` 和 `ollama rm tom-demo` |
 | 2026-10-02 | 为了第三课装 numpy 2.5.3，没有带进别的包。environment.yml 加上 numpy，重建测试环境验证，验证完删除 | `conda run -n tom_lizard pip install numpy==2.5.3` |
+| 2026-10-09 | 发现 Ollama 自动更新到 0.40.0。发现 4 个新模型，是 Claude Fable 5 写博客和验证信息时下的，记在 my_model_list.md | 无 |
+| 2026-10-09 | 实测 qwen3:8b 在不同上下文长度下占多少内存，测完用 `ollama stop` 释放 | `ollama ps` 和 `ollama stop qwen3:8b` |

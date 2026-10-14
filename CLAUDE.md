@@ -19,10 +19,23 @@
 3. 能在本地跑的就在本地跑，不依赖付费云服务，除非我明确同意。
 4. 不要自动 commit 或 push，等我说了再做。
 
+## 电脑
+
+我有三台电脑可以跑本地模型。详细对比在 `research/hardware.md`，结论是 Mac Studio 最适合跑模型。
+
+| 电脑 | 配置 | 现在的用途 |
+| --- | --- | --- |
+| MacBook Pro 14 寸 2023 | M2 Pro，32GB，带宽 200GB/s | 开发用，就是现在这台 |
+| Mac Studio 2023 | M2 Max，64GB，带宽 400GB/s | 还没用，适合当模型服务器 |
+| 台式机 | i7-4770K，GTX 1080 Ti 11GB 显存 | 还没用，显卡老了，驱动和 PyTorch 都在放弃支持 |
+
 ## 本机环境
 
+下面是 MacBook 的环境：
+
 - Apple M2 Pro，32GB 内存
-- Ollama 0.35.0，是桌面 App 版，会自动更新。已下载的模型：llama3.2 3B，qwen3:8b
+- Ollama 0.40.0，是桌面 App 版，会自动更新
+- **所有本地模型都记在 `my_model_list.md`**。下载、删除、更新模型后必须马上更新它，全局 CLAUDE.md 里也有这条规矩
 - Python 用 miniforge 管理，每个项目建自己的 conda 环境，名字和项目文件夹一样。没有装 uv
 - Node v24
 
@@ -37,6 +50,13 @@
 
 @tom_lizard/tom_lizard.md
 @snake_eye/snake_eye.md
+
+## 共用资料
+
+`research/` 放所有项目都用得上的资料，不导入，要用时再打开：
+
+- `hardware.md` 三台电脑跑本地模型的对比，还有假设买 RX 7900 XTX 或 Jetson Orin Nano Super 的分析，以及 MacBook 用 PyTorch 训练的实测速度
+- `learning_resources.md` 学 AI 开发的书和课程，包括已经买的书
 
 ## 新加项目的做法
 
